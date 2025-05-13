@@ -1,0 +1,187 @@
+{
+  "header": {
+    "support": "Qo'llab-quvvatlash",
+    "feed": "Lenta",
+    "myThreads": "Mening postlarim",
+    "messages": "Xabarlar",
+    "resources": "Resurslar"
+  },
+  "home": {
+    "welcome": "Salom, bu yerda siz har doim xush kelibsiz",
+    "welcomeDescription": "Bu fikrlaringizni baham ko'rish va qo'llab-quvvatlash olish uchun xavfsiz joy. Barcha muhokamalar anonimdir."
+  },
+  "createThread": {
+    "placeholder": "O'zingizni qanday his qilyapsiz? Fikrlaringiz bilan bo'lishing...",
+    "selectCategory": "Kategoriyani tanlang",
+    "mood": "Kayfiyat",
+    "publish": "Chop etish",
+    "publishing": "Chop etilmoqda...",
+    "success": "Chop etildi!",
+    "successDescription": "Sizning postingiz muvaffaqiyatli chop etildi.",
+    "error": "Chop etish xatosi",
+    "errorDescription": "Postni chop etib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+    "emptyContent": "Bo'sh xabar",
+    "emptyContentDescription": "Chop etishdan oldin biror narsa yozing.",
+    "emptyCategory": "Kategoriya tanlanmagan",
+    "emptyCategoryDescription": "Iltimos, postingiz uchun kategoriya tanlang."
+  },
+  "threadList": {
+    "title": "Postlar",
+    "new": "Yangi",
+    "latest": "So'nggi",
+    "popular": "Ommabop",
+    "categories": "Kategoriyalar",
+    "allCategories": "Barcha kategoriyalar",
+    "loadMore": "Ko'proq yuklash",
+    "noThreads": "Bu kategoriyada hali postlar yo'q",
+    "error": "Yuklash xatosi",
+    "errorDescription": "Postlarni yuklab bo'lmadi. Iltimos, sahifani yangilang."
+  },
+  "threadCard": {
+    "anonymous": "Anonim",
+    "comments": "Izohlar ({{count}})",
+    "writePrivately": "Shaxsiy yozish"
+  },
+  "comments": {
+    "noComments": "Hali izohlar yo'q",
+    "beFirst": "Izoh qoldirgan birinchi odam bo'ling!",
+    "placeholder": "Qo'llab-quvvatlovchi izoh yozing...",
+    "send": "Yuborish",
+    "sending": "Yuborilmoqda...",
+    "success": "Izoh yuborildi",
+    "successDescription": "Sizning izohingiz muvaffaqiyatli qo'shildi.",
+    "error": "Yuborish xatosi",
+    "errorDescription": "Izohni yuborib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+    "emptyContent": "Bo'sh izoh",
+    "emptyContentDescription": "Yuborishdan oldin biror narsa yozing.",
+    "anonymous": "Anonim qo'llab-quvvatlovchi",
+    "author": "Muallif (Siz)",
+    "volunteer": "ko'ngilli",
+    "reply": "Javob berish"
+  },
+  "reactions": {
+    "understand": "Men sizni tushunaman",
+    "notAlone": "Siz yolg'iz emassiz",
+    "willOvercome": "Siz uddalaysiz",
+    "idea": "G'oyam bor",
+    "support": "Bardosh bering",
+    "error": "Reaktsiya xatosi",
+    "errorDescription": "Reaktsiya qo'shib bo'lmadi. Iltimos, qayta urinib ko'ring."
+  },
+  "categories": {
+    "family": "Oila",
+    "school": "O'qish",
+    "loneliness": "Yolg'izlik",
+    "relationships": "Munosabatlar",
+    "other": "Boshqa"
+  },
+  "moods": {
+    "sad": "G'amgin",
+    "anxious": "Xavotirli",
+    "calm": "Xotirjam",
+    "happy": "Xursand",
+    "confused": "Chalkash",
+    "neutral": "Neytral"
+  },
+  "emergency": {
+    "needHelp": "Yordam kerak",
+    "title": "Favqulodda yordam",
+    "description": "Agar siz inqiroz holatida bo'lsangiz yoki zudlik bilan qo'llab-quvvatlashga muhtoj bo'lsangiz, quyidagi variantlardan biridan foydalaning:",
+    "specialist": "Platforma mutaxassisi",
+    "consultation": "Psixolog bilan onlayn maslahat",
+    "startChat": "Chatni boshlash",
+    "openTelegram": "Telegramda ochish",
+    "emergencyWarning": "Agar siz xavfsizlik haqida xavotirda bo'lsangiz (o'zingizning yoki yaqin kishingizning), zudlik bilan favqulodda xizmatlarga murojaat qiling:"
+  },
+  "resources": {
+    "title": "Foydali resurslar",
+    "viewAll": "Barcha resurslar",
+    "emergencyHelp": "Favqulodda yordam",
+    "getHelp": "Yordam so'rash",
+    "pageTitle": "Qo'llab-quvvatlash resurslari",
+    "pageDescription": "Bu yerda foydali materiallar, qo'llab-quvvatlash xizmatlari kontaktlari va sizga yordam beradigan ma'lumotlar to'plangan.",
+    "mentalHealth": "Ruhiy salomatlik",
+    "crisis": "Inqiroz yordami",
+    "education": "Ta'lim",
+    "communication": "Muloqot",
+    "allCategories": "Barcha kategoriyalar",
+    "noResourcesFound": "Tanlangan kategoriya bo'yicha resurslar topilmadi",
+    "viewResource": "Resursni ochish",
+    "openLink": "O'tish",
+    "tabs": {
+      "resources": "Resurslar",
+      "emergency": "Favqulodda yordam"
+    },
+    "emergencyDescription": "Agar sizga zudlik bilan yordam yoki qo'llab-quvvatlash kerak bo'lsa, murojaat qilishingiz mumkin bo'lgan xizmatlar kontaktlari quyida:",
+    "emergency": {
+      "title": "Favqulodda yordam kerakmi?",
+      "description": "Agar siz xavfda ekanligingizni his qilsangiz yoki kuchli emotsional inqirozni boshdan kechirayotgan bo'lsangiz, yordam so'rashni kechiktirmang."
+    },
+    "categories": {
+      "mental_health": "Ruhiy salomatlik",
+      "crisis": "Inqiroz yordami",
+      "education": "Ta'lim",
+      "communication": "Muloqot"
+    },
+    "additionalHelp": {
+      "title": "Qo'shimcha yordam",
+      "description": "Resurslardan tashqari, bizning materiallarimizda foydali ma'lumot topishingiz mumkin:",
+      "articles": "Ruhiy salomatlik haqida maqolalar",
+      "faq": "Ko'p so'raladigan savollar",
+      "community": "Qo'llab-quvvatlash hamjamiyati"
+    }
+  },
+  "achievements": {
+    "title": "Sizning yutuqlaringiz",
+    "supportedPeople": "qo'llab-quvvatlangan odamlar",
+    "daysInCommunity": "hamjamiyatdagi kunlar",
+    "yourBadges": "Sizning nishonlaringiz",
+    "locked": "Qulflangan",
+    "viewAll": "Barcha yutuqlar"
+  },
+  "badges": {
+    "empath": "Empat",
+    "protector": "Himoyachi",
+    "goodListener": "Yaxshi tinglovchi",
+    "helper": "Yordamchi",
+    "regular": "Muntazam ishtirokchi"
+  },
+  "trending": {
+    "title": "Ommabop mavzular",
+    "threadsCount": "{{count}} post",
+    "allTopics": "Barcha mavzular"
+  },
+  "myThreads": {
+    "title": "Mening postlarim",
+    "description": "Bu yerda siz yaratgan barcha mavzular to'plangan. Ular boshqa foydalanuvchilar uchun anonim bo'lib qoladi.",
+    "noThreads": "Sizda hali postlar yo'q",
+    "createFirst": "Jamiyatdan qo'llab-quvvatlash olish uchun birinchi postingizni yarating",
+    "createThread": "Post yaratish",
+    "error": "Yuklash xatosi",
+    "errorDescription": "Postlaringizni yuklab bo'lmadi. Iltimos, sahifani yangilang."
+  },
+  "messages": {
+    "title": "Shaxsiy xabarlar",
+    "search": "Xabarlarni qidirish",
+    "anonymous": "Anonim suhbatdosh",
+    "lastMessagePreview": "Oxirgi xabar...",
+    "today": "Bugun",
+    "online": "onlayn",
+    "noMessagesYet": "Hali xabarlar yo'q",
+    "startConversation": "Suhbatni boshlash uchun birinchi xabarni yozing",
+    "typeMessage": "Xabarni kiriting...",
+    "privateConversation": "Shaxsiy suhbat",
+    "moderated": "Xavfsizlik uchun moderatsiya qilinadi",
+    "selectConversation": "Suhbatni tanlang",
+    "selectConversationDescription": "Mavjud suhbatni tanlang yoki foydalanuvchi bilan yangi suhbat boshlash uchun lentaga o'ting.",
+    "backToFeed": "Lentaga qaytish",
+    "noConversations": "Sizda hali suhbatlar yo'q",
+    "startByCommenting": "Postlarga izoh qoldirish va foydalanuvchilar bilan suhbatlashishdan boshlang",
+    "sent": "Xabar yuborildi",
+    "sentDescription": "Sizning xabaringiz muvaffaqiyatli yuborildi",
+    "error": "Yuborish xatosi",
+    "errorDescription": "Xabarni yuborib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+    "empty": "Bo'sh xabar",
+    "emptyDescription": "Yuborishdan oldin xabar matnini kiriting."
+  }
+}
