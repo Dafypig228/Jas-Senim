@@ -103,6 +103,18 @@ export default function ThreadDetailsPage() {
         title: t('comments.added'),
         description: t('comments.addedDesc'),
       });
+      
+      // Создаем уведомление для демонстрации
+      if (thread && thread.author && user && thread.author.id !== user.id) {
+        const newId = Math.max(0, ...notifications.map(n => n.id)) + 1;
+        setNotifications(prev => [{
+          id: newId,
+          title: t('notifications.newComment'),
+          message: t('notifications.commentMessage'),
+          isRead: false,
+          timestamp: new Date()
+        }, ...prev]);
+      }
     },
     onError: () => {
       toast({
@@ -237,13 +249,81 @@ export default function ThreadDetailsPage() {
 
   return (
     <div className="container mx-auto p-4 max-w-3xl">
-      <div className="mb-6">
-        <Button variant="outline" asChild className="mb-4">
+      <div className="mb-6 flex items-center justify-between">
+        <Button variant="outline" asChild>
           <Link to="/threads" className="flex items-center">
             <ChevronLeft className="h-4 w-4 mr-1" />
             {t('thread.backToList')}
           </Link>
         </Button>
+        
+        {user && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="relative p-2"
+              >
+                <Bell className="h-4 w-4" />
+                {notifications.filter(n => !n.isRead).length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+                    {notifications.filter(n => !n.isRead).length}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0">
+              <div className="flex items-center justify-between p-3 border-b">
+                <h4 className="font-medium text-sm">{t('notifications.title')}</h4>
+                {notifications.some(n => !n.isRead) && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-xs h-7"
+                    onClick={handleMarkAllAsRead}
+                  >
+                    <Check className="h-3 w-3 mr-1" />
+                    {t('notifications.markAllRead')}
+                  </Button>
+                )}
+              </div>
+              
+              {notifications.length === 0 ? (
+                <div className="p-4 text-center text-sm text-gray-500">
+                  {t('notifications.empty')}
+                </div>
+              ) : (
+                <div className="max-h-80 overflow-auto">
+                  {notifications.map((notification) => (
+                    <div 
+                      key={notification.id} 
+                      className={`p-3 border-b last:border-0 flex items-start hover:bg-gray-50 transition-colors ${notification.isRead ? '' : 'bg-blue-50'}`}
+                    >
+                      <div className={`flex-shrink-0 mr-3 mt-1 p-1.5 rounded-full ${notification.title.includes('комментарий') ? 'bg-blue-100' : 'bg-green-100'}`}>
+                        {notification.title.includes('комментарий') ? (
+                          <MessageSquare className="h-4 w-4 text-blue-600" />
+                        ) : (
+                          <Heart className="h-4 w-4 text-green-600" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-sm">{notification.title}</span>
+                          <span className="text-xs text-gray-500">{formatNotificationTime(notification.timestamp)}</span>
+                        </div>
+                        <p className="text-xs text-gray-600 mb-1">{notification.message}</p>
+                        <Button variant="link" size="sm" className="p-0 h-auto text-xs">
+                          {t('notifications.readMore')}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
 
       {/* Thread content */}
