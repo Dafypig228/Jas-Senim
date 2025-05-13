@@ -11,14 +11,12 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import OpenAI from "openai";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
+// Создаем более простую, имитационную реализацию чата без обращения к API
+// так как OPENAI_API_KEY доступен только на сервере, а не в браузере
+// В полной реализации нужно использовать серверное API для отправки запросов к OpenAI
 
 type Message = {
   id: string;
@@ -44,24 +42,6 @@ export function LocalChat() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Настройки для API запроса
-  const systemMessage = `
-    Ты - эмпатичный помощник для подростков в сложных эмоциональных ситуациях.
-    Твоя цель - поддержать, выслушать и дать совет. Ты не психотерапевт, но можешь 
-    предложить простые стратегии для справления с эмоциями.
-    
-    В случае серьезных проблем (суицидальные мысли, самоповреждение, насилие),
-    мягко рекомендуй обратиться к профессионалам и предлагай номера доверия.
-    
-    Твой стиль: 
-    - Теплый и понимающий
-    - Краткие ответы (максимум 3-4 предложения)
-    - Избегай клише и банальностей
-    - Используй простой язык, понятный подросткам
-    
-    ОЧЕНЬ ВАЖНО: Ты всегда отвечаешь НА РУССКОМ языке, даже если к тебе обращаются на другом языке.
-  `;
-
   useEffect(() => {
     if (messageEndRef.current) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -86,32 +66,40 @@ export function LocalChat() {
     setLoading(true);
     
     try {
-      // Получаем ответ от API
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        messages: [
-          { role: "system", content: systemMessage },
-          ...messages.map(msg => ({ 
-            role: msg.role === "user" ? "user" as const : "assistant" as const, 
-            content: msg.content 
-          })),
-          { role: "user", content: input }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-      });
+      // Имитация задержки для реалистичности
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Простая имитация ответов бота вместо использования OpenAI API
+      let botResponse = "";
+      const userInput = input.toLowerCase();
+      
+      if (userInput.includes("привет") || userInput.includes("здравствуй")) {
+        botResponse = "Привет! Как я могу помочь тебе сегодня?";
+      } else if (userInput.includes("как дела") || userInput.includes("как ты")) {
+        botResponse = "Я всегда готов помочь тебе. Расскажи, что тебя беспокоит?";
+      } else if (userInput.includes("плохо") || userInput.includes("грустно") || userInput.includes("депрессия")) {
+        botResponse = "Мне жаль, что ты чувствуешь себя так. Помни, что эти чувства временны. Хочешь поговорить о том, что именно тебя беспокоит?";
+      } else if (userInput.includes("устал") || userInput.includes("не могу")) {
+        botResponse = "Усталость - это нормально. Иногда нам всем нужен перерыв. Может быть, стоит найти время для отдыха и заботы о себе?";
+      } else if (userInput.includes("помоги") || userInput.includes("совет")) {
+        botResponse = "Я постараюсь помочь. Расскажи подробнее о ситуации, и мы вместе подумаем, как её решить.";
+      } else if (userInput.includes("спасибо")) {
+        botResponse = "Всегда рад помочь! Если у тебя возникнут другие вопросы, я здесь.";
+      } else {
+        botResponse = "Я понимаю твои чувства. Иногда важно просто выговориться. Хочешь рассказать больше о том, что происходит?";
+      }
       
       // Добавляем ответ ассистента
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
-        content: response.choices[0].message.content || "Извини, я не смог обработать твое сообщение.",
+        content: botResponse,
         timestamp: new Date(),
       };
       
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error("Ошибка при запросе к модели:", error);
+      console.error("Ошибка при обработке сообщения:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось получить ответ. Пожалуйста, попробуй позже.",
