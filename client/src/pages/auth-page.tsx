@@ -30,12 +30,13 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { user, loginMutation, registerMutation, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("login");
-
-  // Если пользователь уже авторизован, перенаправляем на главную
-  if (user) {
-    setLocation("/");
-    return null;
-  }
+  
+  // Эффект для перенаправления после авторизации
+  useEffect(() => {
+    if (user) {
+      setLocation("/");
+    }
+  }, [user, setLocation]);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
