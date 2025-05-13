@@ -33,6 +33,7 @@ export default function ThreadDetailsPage() {
   const { toast } = useToast();
   const [comment, setComment] = useState("");
   const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<{id: number, author: string} | null>(null);
 
   // Thread details query
   const { data: thread, isLoading: isLoadingThread } = useQuery({
@@ -125,7 +126,12 @@ export default function ThreadDetailsPage() {
     e.preventDefault();
     if (!comment.trim()) return;
     
-    addCommentMutation.mutate({ content: comment });
+    const commentText = replyTo 
+      ? `@${replyTo.author}: ${comment}`
+      : comment;
+    
+    addCommentMutation.mutate({ content: commentText });
+    setReplyTo(null);
   };
 
   const handleReactionClick = (type: string) => {
@@ -329,8 +335,30 @@ export default function ThreadDetailsPage() {
         <CardContent className="p-4">
           {user ? (
             <form onSubmit={handleCommentSubmit} className="mb-6">
+              {replyTo && (
+                <div className="mb-2 p-2 bg-blue-50 rounded-md border border-blue-200 flex justify-between items-center">
+                  <div className="text-sm">
+                    <span className="text-gray-700">{t('comments.replyingTo')} </span>
+                    <span className="font-medium">{replyTo.author}</span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setReplyTo(null)}
+                    className="h-7 w-7 p-0"
+                  >
+                    <span className="sr-only">{t('common.cancel')}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </Button>
+                </div>
+              )}
               <Textarea 
-                placeholder={t('comments.placeholder')}
+                placeholder={replyTo 
+                  ? t('comments.replyPlaceholder', { author: replyTo.author }) 
+                  : t('comments.placeholder')}
                 className="mb-2"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
@@ -341,7 +369,7 @@ export default function ThreadDetailsPage() {
                 disabled={addCommentMutation.isPending || !comment.trim()}
               >
                 <Send className="h-4 w-4 mr-2" />
-                {t('comments.submit')}
+                {replyTo ? t('comments.submitReply') : t('comments.submit')}
               </Button>
             </form>
           ) : (
@@ -380,16 +408,52 @@ export default function ThreadDetailsPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <div className="flex items-center mb-1">
-                      <h4 className="font-medium text-sm">
-                        {comment.author?.username || t('thread.anonymous')}
-                      </h4>
-                      <span className="text-xs text-muted-foreground ml-2">
-                        {formatDate(comment.createdAt)}
-                      </span>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <h4 className="font-medium text-sm">
+                          {comment.author?.username || t('thread.anonymous')}
+                        </h4>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          {formatDate(comment.createdAt)}
+                        </span>
+                      </div>
+                      {user && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-7 text-xs text-gray-600 hover:text-gray-900"
+                          onClick={() => {
+                            setReplyTo({
+                              id: comment.id,
+                              author: comment.author?.username || t('thread.anonymous')
+                            });
+                            // Фокус на поле ввода после клика
+                            setTimeout(() => {
+                              document.querySelector('textarea')?.focus();
+                            }, 100);
+                          }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 10 20 15 15 20"></polyline>
+                            <path d="M4 4v7a4 4 0 0 0 4 4h12"></path>
+                          </svg>
+                          {t('thread.reply')}
+                        </Button>
+                      )}
                     </div>
                     <div className="bg-neutral-50 rounded-md p-3">
-                      <p className="text-sm whitespace-pre-line">{comment.content}</p>
+                      <p className="text-sm whitespace-pre-line">
+                        {comment.content.startsWith('@') ? (
+                          <>
+                            <span className="inline-block bg-blue-100 px-1 py-0.5 rounded text-blue-800 font-medium mb-1">
+                              {comment.content.split(':')[0]}
+                            </span>
+                            <span>{comment.content.split(':').slice(1).join(':')}</span>
+                          </>
+                        ) : (
+                          comment.content
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
