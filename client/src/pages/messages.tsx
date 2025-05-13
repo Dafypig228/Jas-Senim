@@ -33,13 +33,13 @@ export default function MessagesPage() {
   const otherUserId = user?.id === userId1 ? userId2 : userId1;
   
   // Fetch messages
-  const { data: messages, isLoading, isError } = useQuery({
+  const { data: messages = [], isLoading, isError } = useQuery<any[]>({
     queryKey: [`/api/messages/${conversationId}`],
     enabled: !!conversationId && !!user,
   });
   
   // Fetch other user's info
-  const { data: otherUser, isLoading: isLoadingUser } = useQuery({
+  const { data: otherUser = {}, isLoading: isLoadingUser } = useQuery<any>({
     queryKey: [`/api/users/${otherUserId}`],
     enabled: !!otherUserId,
   });
@@ -98,13 +98,13 @@ export default function MessagesPage() {
             ) : (
               <div className="flex items-center">
                 <Avatar>
-                  <AvatarImage src={otherUser?.avatar || undefined} />
+                  <AvatarImage src={otherUser.avatar || undefined} />
                   <AvatarFallback className="bg-primary-100 text-primary-700">
-                    {otherUser?.username?.slice(0, 2).toUpperCase() || "UN"}
+                    {(otherUser.username ? otherUser.username.slice(0, 2).toUpperCase() : "UN")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="ml-2">
-                  <CardTitle className="text-lg">{otherUser?.username || t('user.anonymous')}</CardTitle>
+                  <CardTitle className="text-lg">{otherUser.username || t('user.anonymous')}</CardTitle>
                 </div>
               </div>
             )}
