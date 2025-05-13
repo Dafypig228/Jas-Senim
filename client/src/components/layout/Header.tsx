@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
   currentUser: {
     id: number;
     username: string;
-  };
+  } | null;
   notifications: number;
 }
 
@@ -14,9 +15,14 @@ const Header = ({ currentUser, notifications }: HeaderProps) => {
   const [location] = useLocation();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const { logoutMutation } = useAuth();
+  
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+  
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   return (
@@ -35,18 +41,22 @@ const Header = ({ currentUser, notifications }: HeaderProps) => {
               >
                 {t('header.feed')}
               </Link>
-              <Link 
-                href="/my-threads" 
-                className={`${location === '/my-threads' ? 'border-primary-500 text-neutral-700' : 'border-transparent hover:border-neutral-300 text-neutral-500 hover:text-neutral-700'} border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium`}
-              >
-                {t('header.myThreads')}
-              </Link>
-              <Link 
-                href="/messages" 
-                className={`${location === '/messages' ? 'border-primary-500 text-neutral-700' : 'border-transparent hover:border-neutral-300 text-neutral-500 hover:text-neutral-700'} border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium`}
-              >
-                {t('header.messages')}
-              </Link>
+              {currentUser && (
+                <>
+                  <Link 
+                    href="/my-threads" 
+                    className={`${location === '/my-threads' ? 'border-primary-500 text-neutral-700' : 'border-transparent hover:border-neutral-300 text-neutral-500 hover:text-neutral-700'} border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium`}
+                  >
+                    {t('header.myThreads')}
+                  </Link>
+                  <Link 
+                    href="/messages" 
+                    className={`${location === '/messages' ? 'border-primary-500 text-neutral-700' : 'border-transparent hover:border-neutral-300 text-neutral-500 hover:text-neutral-700'} border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium`}
+                  >
+                    {t('header.messages')}
+                  </Link>
+                </>
+              )}
               <Link 
                 href="/resources" 
                 className={`${location === '/resources' ? 'border-primary-500 text-neutral-700' : 'border-transparent hover:border-neutral-300 text-neutral-500 hover:text-neutral-700'} border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium`}
@@ -56,30 +66,43 @@ const Header = ({ currentUser, notifications }: HeaderProps) => {
             </nav>
           </div>
           <div className="flex items-center">
-            <div className="hidden sm:flex items-center">
-              <button className="p-2 rounded-full text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                <span className="ri-search-line text-xl"></span>
-              </button>
-              <div className="relative ml-3">
-                <button className="p-2 rounded-full text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                  <span className="ri-notification-3-line text-xl"></span>
-                  {notifications > 0 && (
-                    <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-status-error ring-2 ring-white"></span>
-                  )}
-                </button>
-              </div>
-            </div>
-            <div className="relative ml-3">
-              <div>
-                <button className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500">
-                  <div className="h-8 w-8 rounded-full bg-accent-200 flex items-center justify-center">
-                    <span className="font-medium text-accent-700">
-                      {currentUser.username.charAt(0).toUpperCase()}
-                    </span>
+            {currentUser ? (
+              <>
+                <div className="hidden sm:flex items-center">
+                  <button className="p-2 rounded-full text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <span className="ri-search-line text-xl"></span>
+                  </button>
+                  <div className="relative ml-3">
+                    <button className="p-2 rounded-full text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                      <span className="ri-notification-3-line text-xl"></span>
+                      {notifications > 0 && (
+                        <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-status-error ring-2 ring-white"></span>
+                      )}
+                    </button>
                   </div>
-                </button>
-              </div>
-            </div>
+                </div>
+                <div className="relative ml-3">
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-full bg-accent-200 flex items-center justify-center">
+                      <span className="font-medium text-accent-700">
+                        {currentUser.username.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={handleLogout} 
+                      className="ml-2 text-neutral-500 hover:text-neutral-700 text-sm"
+                      disabled={logoutMutation.isPending}
+                    >
+                      {t('header.logout')}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <Link href="/auth" className="bg-primary-500 hover:bg-primary-600 text-white rounded-md px-4 py-2 text-sm font-medium">
+                {t('header.login')}
+              </Link>
+            )}
             <div className="ml-3 md:hidden">
               <button 
                 className="p-2 rounded-full text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -99,15 +122,24 @@ const Header = ({ currentUser, notifications }: HeaderProps) => {
             <Link href="/" className={location === '/' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
               {t('header.feed')}
             </Link>
-            <Link href="/my-threads" className={location === '/my-threads' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
-              {t('header.myThreads')}
-            </Link>
-            <Link href="/messages" className={location === '/messages' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
-              {t('header.messages')}
-            </Link>
+            {currentUser && (
+              <>
+                <Link href="/my-threads" className={location === '/my-threads' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
+                  {t('header.myThreads')}
+                </Link>
+                <Link href="/messages" className={location === '/messages' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
+                  {t('header.messages')}
+                </Link>
+              </>
+            )}
             <Link href="/resources" className={location === '/resources' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
               {t('header.resources')}
             </Link>
+            {!currentUser && (
+              <Link href="/auth" className="bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium">
+                {t('header.login')}
+              </Link>
+            )}
           </div>
         </div>
       )}

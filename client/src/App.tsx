@@ -10,28 +10,30 @@ import Home from "@/pages/Home";
 import MyThreads from "@/pages/MyThreads";
 import Messages from "@/pages/Messages";
 import Resources from "@/pages/Resources";
-import { useEffect, useState } from "react";
+import AuthPage from "@/pages/auth-page";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { EmotionalCheckin } from "@/components/EmotionalCheckin";
+import { useEffect } from "react";
 
 function Router() {
+  const { user } = useAuth();
+  
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/my-threads" component={MyThreads} />
-      <Route path="/messages" component={Messages} />
+      <ProtectedRoute path="/my-threads" component={MyThreads} />
+      <ProtectedRoute path="/messages" component={Messages} />
       <Route path="/resources" component={Resources} />
+      <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-function App() {
-  // Demo user state for the prototype
-  const [currentUser, setCurrentUser] = useState({
-    id: 1,
-    username: "anonymous",
-    language: "ru"
-  });
-
+function AppContent() {
+  const { user } = useAuth();
+  
   // Set page title and meta description
   useEffect(() => {
     document.title = "Поддержка | Платформа эмоциональной поддержки подростков";
@@ -47,12 +49,23 @@ function App() {
   }, []);
 
   return (
+    <>
+      <Header currentUser={user} notifications={2} />
+      <Router />
+      <EmergencyButton />
+      {user && <EmotionalCheckin />}
+    </>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Header currentUser={currentUser} notifications={2} />
-        <Toaster />
-        <Router />
-        <EmergencyButton />
+        <AuthProvider>
+          <Toaster />
+          <AppContent />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
