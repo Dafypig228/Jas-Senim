@@ -42,6 +42,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).json({ message: "Authentication required" });
   };
   
+  // User routes
+  app.get("/api/users/:userId", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Return only safe user information (no password)
+      const safeUser = {
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
+        language: user.language,
+        createdAt: user.createdAt
+      };
+      
+      return res.json(safeUser);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
+  
   // Emotional Check-in routes
   app.get("/api/checkin/needed", isAuthenticated, async (req: Request, res: Response) => {
     try {
