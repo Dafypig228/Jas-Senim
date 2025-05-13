@@ -136,6 +136,18 @@ export default function ThreadDetailsPage() {
         title: t('reactions.added'),
         description: t('reactions.addedDesc'),
       });
+      
+      // Создаем уведомление для демонстрации
+      if (thread && thread.author && user && thread.author.id !== user.id) {
+        const newId = Math.max(0, ...notifications.map(n => n.id)) + 1;
+        setNotifications(prev => [{
+          id: newId,
+          title: t('notifications.newReaction'),
+          message: t('notifications.reactionMessage'),
+          isRead: false,
+          timestamp: new Date()
+        }, ...prev]);
+      }
     },
     onError: () => {
       toast({
