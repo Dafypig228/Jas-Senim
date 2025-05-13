@@ -90,6 +90,7 @@ export class MemStorage implements IStorage {
   private resources: Map<number, Resource>;
   private crisisContacts: Map<number, CrisisContact>;
   private aiSuggestions: Map<number, AiSuggestion>;
+  private emotionalCheckins: Map<number, EmotionalCheckin>;
   
   private userIdCounter: number;
   private threadIdCounter: number;
@@ -100,6 +101,7 @@ export class MemStorage implements IStorage {
   private resourceIdCounter: number;
   private crisisContactIdCounter: number;
   private aiSuggestionIdCounter: number;
+  private emotionalCheckinIdCounter: number;
   
   constructor() {
     this.users = new Map();
@@ -111,6 +113,7 @@ export class MemStorage implements IStorage {
     this.resources = new Map();
     this.crisisContacts = new Map();
     this.aiSuggestions = new Map();
+    this.emotionalCheckins = new Map();
     
     this.userIdCounter = 1;
     this.threadIdCounter = 1;
@@ -121,6 +124,7 @@ export class MemStorage implements IStorage {
     this.resourceIdCounter = 1;
     this.crisisContactIdCounter = 1;
     this.aiSuggestionIdCounter = 1;
+    this.emotionalCheckinIdCounter = 1;
     
     // Initialize with some starter data
     this.initializeData();
@@ -135,16 +139,93 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(user => user.username === username);
   }
   
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.googleId === googleId);
+  }
+  
   async createUser(user: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
     const createdAt = new Date();
     const newUser: User = { 
       ...user, 
       id,
-      createdAt
+      createdAt,
+      lastCheckinAt: null
     };
     this.users.set(id, newUser);
     return newUser;
+  }
+  
+  async updateUserLastCheckin(userId: number): Promise<void> {
+    const user = await this.getUser(userId);
+    if (user) {
+      user.lastCheckinAt = new Date();
+      this.users.set(userId, user);
+    }
+  }
+  
+  // Emotional check-in operations
+  async createEmotionalCheckin(checkin: InsertEmotionalCheckin): Promise<EmotionalCheckin> {
+    const id = this.emotionalCheckinIdCounter++;
+    const createdAt = new Date();
+    
+    const newCheckin: EmotionalCheckin = {
+      id,
+      createdAt,
+      ...checkin
+    };
+    
+    this.emotionalCheckins.set(id, newCheckin);
+    // Update user's last checkin timestamp
+    await this.updateUserLastCheckin(checkin.userId);
+    return newCheckin;
+  }
+  
+  async getEmotionalCheckinsByUserId(userId: number, limit: number = 10): Promise<EmotionalCheckin[]> {
+    return Array.from(this.emotionalCheckins.values())
+      .filter(checkin => checkin.userId === userId)
+      .sort((a, b) => {
+        const aDate = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+        const bDate = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+        return bDate.getTime() - aDate.getTime();
+      })
+      .slice(0, limit);
+  }
+  
+  async getLatestEmotionalCheckins(userId: number): Promise<Record<string, string>> {
+    const checkins = await this.getEmotionalCheckinsByUserId(userId, 8);
+    const result: Record<string, string> = {};
+    
+    // Group by question and take the latest for each
+    const latestByQuestion = checkins.reduce((acc, checkin) => {
+      if (!acc[checkin.question] || 
+          new Date(acc[checkin.question].createdAt).getTime() < 
+          new Date(checkin.createdAt).getTime()) {
+        acc[checkin.question] = checkin;
+      }
+      return acc;
+    }, {} as Record<string, EmotionalCheckin>);
+    
+    // Convert to simple question/answer record
+    Object.entries(latestByQuestion).forEach(([question, checkin]) => {
+      result[question] = checkin.answer;
+    });
+    
+    return result;
+  }
+  
+  async isCheckinNeeded(userId: number): Promise<boolean> {
+    const user = await this.getUser(userId);
+    if (!user || !user.lastCheckinAt) {
+      return true; // First time user or never checked in
+    }
+    
+    const lastCheckin = new Date(user.lastCheckinAt);
+    const now = new Date();
+    
+    // Check if it's been at least 7 days since last check-in
+    const diffDays = Math.floor((now.getTime() - lastCheckin.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays >= 7;
   }
   
   // Thread operations

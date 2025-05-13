@@ -1,13 +1,16 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { moderateContent, assessSuicideRisk, generateResponseSuggestions } from "./moderation";
+import { setupAuth } from "./auth";
 import { 
   insertUserSchema, 
   insertThreadSchema, 
   insertCommentSchema, 
   insertReactionSchema,
-  insertMessageSchema
+  insertMessageSchema,
+  insertEmotionalCheckinSchema,
+  checkinQuestions
 } from "@shared/schema";
 import { ZodError } from "zod";
 
