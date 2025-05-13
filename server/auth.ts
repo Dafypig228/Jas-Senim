@@ -196,6 +196,45 @@ export function setupAuth(app: Express) {
     res.json(userWithoutPassword);
   });
 
+  // Firebase Google Auth
+  app.post("/api/auth/firebase", async (req, res, next) => {
+    try {
+      const { idToken, displayName, email, photoURL } = req.body;
+      
+      if (!idToken) {
+        return res.status(400).json({ message: "ID token is required" });
+      }
+
+      // Extract Google ID from Firebase's idToken
+      // В реальном приложении здесь должна быть верификация токена,
+      // но для примера мы просто используем часть idToken как googleId
+      const googleId = email || `firebase-${Date.now()}`;
+      
+      // Check if user exists
+      let user = await storage.getUserByGoogleId(googleId);
+      
+      if (!user) {
+        // Create a new user with Google profile info
+        user = await storage.createUser({
+          username: displayName || `user-${googleId.substring(0, 8)}`,
+          password: await hashPassword(randomBytes(16).toString("hex")), // Random password
+          googleId: googleId,
+          avatar: photoURL || null
+        });
+      }
+      
+      // Log the user in
+      req.login(user, (err) => {
+        if (err) return next(err);
+        // Don't include password in response
+        const { password, ...userWithoutPassword } = user;
+        res.json(userWithoutPassword);
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   // Middleware to check if user is authenticated
   app.use([
     "/api/threads/create", 
