@@ -7,13 +7,18 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  googleId: text("google_id").unique(),
+  avatar: text("avatar"),
   language: text("language").default("ru"),
+  lastCheckinAt: timestamp("last_checkin_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  googleId: true,
+  avatar: true,
   language: true,
 });
 
@@ -224,3 +229,36 @@ export const moods = [
 ] as const;
 export const moodSchema = z.enum(moods);
 export type Mood = z.infer<typeof moodSchema>;
+
+// Emotional check-in questions and responses
+export const emotionalCheckins = pgTable("emotional_checkins", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertEmotionalCheckinSchema = createInsertSchema(emotionalCheckins).pick({
+  userId: true,
+  question: true,
+  answer: true,
+});
+
+export type EmotionalCheckin = typeof emotionalCheckins.$inferSelect;
+export type InsertEmotionalCheckin = z.infer<typeof insertEmotionalCheckinSchema>;
+
+// Check-in questions
+export const checkinQuestions = [
+  "how_are_you_feeling",
+  "sleep_quality",
+  "social_connection",
+  "stress_level",
+  "motivation",
+  "self_care",
+  "mood_changes",
+  "support_needed",
+] as const;
+
+export const checkinQuestionSchema = z.enum(checkinQuestions);
+export type CheckinQuestion = z.infer<typeof checkinQuestionSchema>;

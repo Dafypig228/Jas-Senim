@@ -16,7 +16,9 @@ import {
   CrisisContact,
   InsertCrisisContact,
   AiSuggestion,
-  InsertAiSuggestion
+  InsertAiSuggestion,
+  EmotionalCheckin,
+  InsertEmotionalCheckin
 } from "@shared/schema";
 
 // Define the storage interface
@@ -24,7 +26,15 @@ export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserLastCheckin(userId: number): Promise<void>;
+  
+  // Emotional check-in operations
+  createEmotionalCheckin(checkin: InsertEmotionalCheckin): Promise<EmotionalCheckin>;
+  getEmotionalCheckinsByUserId(userId: number, limit?: number): Promise<EmotionalCheckin[]>;
+  getLatestEmotionalCheckins(userId: number): Promise<Record<string, string>>;
+  isCheckinNeeded(userId: number): Promise<boolean>;
   
   // Thread operations
   createThread(thread: InsertThread): Promise<Thread>;
