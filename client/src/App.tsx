@@ -11,6 +11,7 @@ import ThreadsPage from "@/pages/threads";
 import MessagesPage from "@/pages/messages";
 import Resources from "@/pages/Resources";
 import AuthPage from "@/pages/auth-page";
+import ThreadDetailsPage from "@/pages/thread-details";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
@@ -22,7 +23,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/threads" component={ThreadsPage} />
-      <Route path="/threads/:id" component={ThreadsPage} />
+      <Route path="/threads/:id" component={ThreadDetailsPage} />
       <ProtectedRoute path="/messages/:conversationId" component={MessagesPage} />
       <ProtectedRoute path="/messages" component={MessagesPage} />
       <Route path="/resources" component={Resources} />

@@ -23,8 +23,8 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function ThreadDetailsPage() {
   const { t } = useTranslation();
-  const { id } = useParams();
-  const threadId = parseInt(id);
+  const { id = "0" } = useParams();
+  const threadId = parseInt(id || "0");
   const { user } = useAuth();
   const { toast } = useToast();
   const [comment, setComment] = useState("");
