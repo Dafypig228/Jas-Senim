@@ -15,7 +15,11 @@ import {
   HeartHandshake, 
   Heart, 
   Shield, 
-  Lightbulb 
+  Lightbulb,
+  MessageSquare,
+  Share2,
+  Flag,
+  UserCircle
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -186,49 +190,133 @@ export default function ThreadDetailsPage() {
       </div>
 
       {/* Thread content */}
-      <ThreadCard thread={thread} />
+      <Card className="overflow-hidden hover:shadow-md transition-all duration-200 bg-white fade-in mb-4">
+        <CardHeader className="p-4 pb-0 flex flex-row justify-between items-start">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={thread.thread?.author?.avatar || undefined} />
+              <AvatarFallback className="bg-primary-100 text-primary-700 text-lg font-semibold">
+                {thread.thread?.author?.username ? thread.thread.author.username.slice(0, 2).toUpperCase() : "AN"}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <span className="font-medium">
+                {thread.thread?.author?.username || t('thread.anonymous')}
+              </span>
+              <div className="flex gap-1 items-center text-xs text-muted-foreground">
+                <time dateTime={thread.thread?.createdAt}>{formatDate(thread.thread?.createdAt)}</time>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-1">
+            {thread.thread?.category && (
+              <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-blue-100 text-blue-800">
+                {t(`categories.${thread.thread.category}`)}
+              </span>
+            )}
+            {thread.thread?.mood && (
+              <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-purple-100 text-purple-800">
+                {t(`moods.${thread.thread.mood}`)}
+              </span>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="p-5">
+          <p className="whitespace-pre-line text-gray-800 leading-relaxed">
+            {thread.thread?.content}
+          </p>
+        </CardContent>
+        <div className="flex justify-between items-center p-3 bg-gray-50 border-t">
+          <div className="flex space-x-3">
+            <Button variant="ghost" size="sm" className="text-xs flex items-center gap-1 text-gray-600">
+              <MessageSquare className="h-4 w-4" />
+              <span>{comments.length} {t('comments.title')}</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                toast({
+                  title: t('thread.shared'),
+                  description: t('thread.sharedDesc')
+                });
+              }}
+              className="text-xs flex items-center gap-1 text-gray-600"
+            >
+              <Share2 className="h-4 w-4" />
+              <span>{t('thread.share')}</span>
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                toast({
+                  title: t('thread.reported'),
+                  description: t('thread.reportedDesc')
+                });
+              }}
+              className="text-xs flex items-center gap-1 text-gray-600"
+            >
+              <Flag className="h-4 w-4" />
+              <span>{t('thread.report')}</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                toast({
+                  description: t('thread.dmSent')
+                });
+              }}
+              className="text-xs flex items-center gap-1 text-gray-600"
+            >
+              <UserCircle className="h-4 w-4" />
+              <span>{t('thread.directMessage')}</span>
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       {/* Reactions section */}
-      <Card className="mt-4 bg-neutral-50 border border-neutral-100">
+      <Card className="mt-6 mb-6 bg-white shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg text-gray-800">{t('thread.howDoYouFeel')}</CardTitle>
+        </CardHeader>
         <CardContent className="p-4">
-          <h3 className="text-sm font-medium mb-3">{t('thread.howDoYouFeel')}</h3>
-          <div className="flex flex-wrap gap-2">
-            <Button 
-              variant={selectedReaction === "understand" ? "default" : "outline"} 
-              size="sm" 
-              className="flex items-center"
-              onClick={() => handleReactionClick("understand")}
-            >
-              <HeartHandshake className="h-4 w-4 mr-1 text-pink-600" />
-              {t('reactions.understand')}
-            </Button>
-            <Button 
-              variant={selectedReaction === "not_alone" ? "default" : "outline"} 
-              size="sm" 
-              className="flex items-center"
-              onClick={() => handleReactionClick("not_alone")}
-            >
-              <Shield className="h-4 w-4 mr-1 text-purple-600" />
-              {t('reactions.notAlone')}
-            </Button>
-            <Button 
-              variant={selectedReaction === "will_overcome" ? "default" : "outline"} 
-              size="sm" 
-              className="flex items-center"
-              onClick={() => handleReactionClick("will_overcome")}
-            >
-              <Heart className="h-4 w-4 mr-1 text-red-600" />
-              {t('reactions.willOvercome')}
-            </Button>
-            <Button 
-              variant={selectedReaction === "idea" ? "default" : "outline"} 
-              size="sm" 
-              className="flex items-center"
-              onClick={() => handleReactionClick("idea")}
-            >
-              <Lightbulb className="h-4 w-4 mr-1 text-amber-600" />
-              {t('reactions.idea')}
-            </Button>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className={`flex flex-col items-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${selectedReaction === "understand" ? "bg-pink-50 border-pink-300" : "bg-white hover:bg-pink-50/50 border-gray-200"}`}
+              onClick={() => handleReactionClick("understand")}>
+              <div className="p-3 rounded-full bg-pink-100 mb-2">
+                <HeartHandshake className="h-6 w-6 text-pink-600" />
+              </div>
+              <span className="text-sm font-medium text-center">{t('reactions.understand')}</span>
+            </div>
+            
+            <div className={`flex flex-col items-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${selectedReaction === "not_alone" ? "bg-purple-50 border-purple-300" : "bg-white hover:bg-purple-50/50 border-gray-200"}`}
+              onClick={() => handleReactionClick("not_alone")}>
+              <div className="p-3 rounded-full bg-purple-100 mb-2">
+                <Shield className="h-6 w-6 text-purple-600" />
+              </div>
+              <span className="text-sm font-medium text-center">{t('reactions.notAlone')}</span>
+            </div>
+            
+            <div className={`flex flex-col items-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${selectedReaction === "will_overcome" ? "bg-red-50 border-red-300" : "bg-white hover:bg-red-50/50 border-gray-200"}`}
+              onClick={() => handleReactionClick("will_overcome")}>
+              <div className="p-3 rounded-full bg-red-100 mb-2">
+                <Heart className="h-6 w-6 text-red-600" />
+              </div>
+              <span className="text-sm font-medium text-center">{t('reactions.willOvercome')}</span>
+            </div>
+            
+            <div className={`flex flex-col items-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${selectedReaction === "idea" ? "bg-amber-50 border-amber-300" : "bg-white hover:bg-amber-50/50 border-gray-200"}`}
+              onClick={() => handleReactionClick("idea")}>
+              <div className="p-3 rounded-full bg-amber-100 mb-2">
+                <Lightbulb className="h-6 w-6 text-amber-600" />
+              </div>
+              <span className="text-sm font-medium text-center">{t('reactions.idea')}</span>
+            </div>
           </div>
         </CardContent>
       </Card>
