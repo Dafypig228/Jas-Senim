@@ -9,6 +9,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -174,6 +183,35 @@ export default function ThreadDetailsPage() {
       toast({
         title: t('reactions.removeError'),
         description: t('reactions.removeErrorDesc'),
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Мутация для отправки личного сообщения
+  const sendDirectMessageMutation = useMutation({
+    mutationFn: async () => {
+      if (!directMessageContent.trim() || !directMessageRecipient) {
+        throw new Error(t('messages.emptyDescription'));
+      }
+      return await apiRequest('POST', '/api/messages', {
+        content: directMessageContent,
+        receiverId: directMessageRecipient.id
+      });
+    },
+    onSuccess: () => {
+      setDirectMessageContent("");
+      setShowDirectMessageModal(false);
+      setDirectMessageRecipient(null);
+      toast({
+        title: t('messages.privateMessageSent'),
+        description: t('messages.sentDescription'),
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: t('messages.privateMessageError'),
+        description: error instanceof Error ? error.message : t('messages.errorDescription'),
         variant: "destructive",
       });
     },
