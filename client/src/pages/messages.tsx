@@ -83,7 +83,7 @@ export default function MessagesPage() {
       <Card className="shadow-sm">
         <CardHeader className="border-b bg-muted/10">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm" className="mr-2">
+            <Button variant="ghost" size="sm" className="mr-2" onClick={() => window.history.back()}>
               <ArrowLeft className="h-4 w-4 mr-1" />
               {t('common.back')}
             </Button>
@@ -134,7 +134,7 @@ export default function MessagesPage() {
             </div>
           ) : isError ? (
             <p className="text-center py-4 text-destructive">{t('messages.loadError')}</p>
-          ) : messages && messages.length > 0 ? (
+          ) : messages.length > 0 ? (
             <div className="py-4">
               {messages.map((message: any) => (
                 <MessageCard key={message.id} message={message} />
