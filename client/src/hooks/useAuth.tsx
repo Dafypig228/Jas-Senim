@@ -128,10 +128,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async () => {
       await signInWithGoogle();
     },
-    onError: (error: Error) => {
+    onError: (err: unknown) => {
+      const error = err as Error;
       toast({
         title: "Ошибка входа через Google",
-        description: error.message,
+        description: error.message || 'Произошла ошибка при входе через Google',
         variant: "destructive",
       });
     }
@@ -161,11 +162,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             description: `Добро пожаловать, ${userData.username}!`
           });
         }
-      } catch (error) {
-        console.error("Error handling redirect:", error);
+      } catch (err) {
+        console.error("Error handling redirect:", err);
+        const error = err as Error;
         toast({
           title: "Ошибка входа через Google",
-          description: error.message,
+          description: error.message || 'Произошла ошибка при входе через Google',
           variant: "destructive",
         });
       }
