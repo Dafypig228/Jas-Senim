@@ -15,6 +15,7 @@ import ThreadDetailsPage from "@/pages/thread-details";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
+import { LocalChat } from "@/components/chat/LocalChat";
 
 function Router() {
   const { user } = useAuth();
@@ -55,6 +56,7 @@ function AppContent() {
       <Header currentUser={user} notifications={2} />
       <Router />
       <EmergencyButton />
+      <LocalChat />
     </>
   );
 }

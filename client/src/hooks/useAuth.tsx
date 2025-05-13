@@ -126,23 +126,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const googleSignInMutation = useMutation({
     mutationFn: async () => {
-      await signInWithGoogle();
-    },
-    onError: (err: unknown) => {
-      const error = err as Error;
-      toast({
-        title: "Ошибка входа через Google",
-        description: error.message || 'Произошла ошибка при входе через Google',
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Обработка редиректа после входа через Google
-  useEffect(() => {
-    const checkRedirectResult = async () => {
       try {
-        const result = await handleRedirectResult();
+        // Получаем тестовый результат входа
+        const result = await signInWithGoogle();
         if (result) {
           const { user: firebaseUser, idToken } = result;
           
@@ -163,18 +149,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         }
       } catch (err) {
-        console.error("Error handling redirect:", err);
+        console.error("Error signing in with Google:", err);
         const error = err as Error;
         toast({
           title: "Ошибка входа через Google",
           description: error.message || 'Произошла ошибка при входе через Google',
-          variant: "destructive",
+          variant: "destructive", 
         });
+        throw err;
       }
-    };
-    
-    checkRedirectResult();
-  }, [toast]);
+    },
+    onError: (err: unknown) => {
+      const error = err as Error;
+      toast({
+        title: "Ошибка входа через Google",
+        description: error.message || 'Произошла ошибка при входе через Google',
+        variant: "destructive",
+      });
+    }
+  });
 
   return (
     <AuthContext.Provider
