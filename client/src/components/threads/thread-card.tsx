@@ -166,12 +166,12 @@ export function ThreadCard({ thread, preview = false }: ThreadCardProps) {
                     </Tooltip>
                   )}
                   
-                  {thread.reactionCounts.not_alone > 0 && (
+                  {thread.reactionCounts.notAlone > 0 && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="flex items-center text-xs text-muted-foreground">
                           <Shield className="h-4 w-4 mr-1 text-purple-600" />
-                          <span>{thread.reactionCounts.not_alone}</span>
+                          <span>{thread.reactionCounts.notAlone}</span>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>

@@ -212,8 +212,8 @@ export type Category = z.infer<typeof categorySchema>;
 
 export const reactionTypes = [
   "understand",
-  "not_alone",
-  "will_overcome",
+  "notAlone",
+  "willOvercome",
   "idea",
   "support",
 ] as const;
