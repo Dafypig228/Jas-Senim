@@ -31,46 +31,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   };
 
-  // Authentication routes (simplified for demo)
-  app.post("/api/auth/register", async (req: Request, res: Response) => {
+  // Setup authentication with passport
+  setupAuth(app);
+  
+  // Middleware to check if user is authenticated
+  const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.status(401).json({ message: "Authentication required" });
+  };
+  
+  // Emotional Check-in routes
+  app.get("/api/checkin/needed", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
-      const existingUser = await storage.getUserByUsername(userData.username);
-      
-      if (existingUser) {
-        return res.status(409).json({ message: "Username already exists" });
+      // @ts-ignore
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
       }
       
-      const user = await storage.createUser(userData);
-      // Remove sensitive data
-      const { password, ...userWithoutPassword } = user;
-      
-      return res.status(201).json(userWithoutPassword);
+      const isNeeded = await storage.isCheckinNeeded(userId);
+      res.json({ isNeeded });
     } catch (error) {
-      return handleError(res, error);
+      handleError(res, error);
     }
   });
-
-  app.post("/api/auth/login", async (req: Request, res: Response) => {
+  
+  app.get("/api/checkin/questions", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const { username, password } = req.body;
+      // Return list of check-in questions with translations
+      // @ts-ignore
+      const language = req.user?.language || "ru";
+      const questionsObj = checkinQuestions.reduce((acc, question) => {
+        acc[question] = question; // In a real app, this would be translated
+        return acc;
+      }, {} as Record<string, string>);
       
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
-      }
-      
-      const user = await storage.getUserByUsername(username);
-      
-      if (!user || user.password !== password) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      
-      // Remove sensitive data
-      const { password: _, ...userWithoutPassword } = user;
-      
-      return res.json(userWithoutPassword);
+      res.json(questionsObj);
     } catch (error) {
-      return handleError(res, error);
+      handleError(res, error);
+    }
+  });
+  
+  app.post("/api/checkin", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // @ts-ignore
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const checkinData = insertEmotionalCheckinSchema.parse({
+        ...req.body,
+        userId
+      });
+      
+      const newCheckin = await storage.createEmotionalCheckin(checkinData);
+      res.status(201).json(newCheckin);
+    } catch (error) {
+      handleError(res, error);
+    }
+  });
+  
+  app.get("/api/checkin/history", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // @ts-ignore
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const checkins = await storage.getEmotionalCheckinsByUserId(userId, limit);
+      res.json(checkins);
+    } catch (error) {
+      handleError(res, error);
+    }
+  });
+  
+  app.get("/api/checkin/latest", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // @ts-ignore
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const latest = await storage.getLatestEmotionalCheckins(userId);
+      res.json(latest);
+    } catch (error) {
+      handleError(res, error);
     }
   });
 
@@ -142,9 +193,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/threads", async (req: Request, res: Response) => {
+  app.post("/api/threads", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const threadData = insertThreadSchema.parse(req.body);
+      // @ts-ignore
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const threadData = insertThreadSchema.parse({
+        ...req.body,
+        userId
+      });
       
       // Moderate content before saving
       const moderationResult = await moderateContent(threadData.content);
@@ -152,8 +212,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create thread with moderation results
       const thread = await storage.createThread({
         ...threadData,
+        // @ts-ignore
         isRisky: moderationResult.isRisky,
+        // @ts-ignore
         riskLevel: moderationResult.riskLevel,
+        // @ts-ignore
         riskReason: moderationResult.riskReason
       });
       
@@ -183,8 +246,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/threads/:threadId/comments", async (req: Request, res: Response) => {
+  app.post("/api/threads/:threadId/comments", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      // @ts-ignore
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
       const threadId = parseInt(req.params.threadId);
       const thread = await storage.getThread(threadId);
       
@@ -194,7 +263,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const commentData = insertCommentSchema.parse({
         ...req.body,
-        threadId
+        threadId,
+        userId
       });
       
       // Moderate comment content
@@ -202,6 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const comment = await storage.createComment({
         ...commentData,
+        // @ts-ignore
         isRisky: moderationResult.isRisky
       });
       
@@ -212,8 +283,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reaction routes
-  app.post("/api/threads/:threadId/reactions", async (req: Request, res: Response) => {
+  app.post("/api/threads/:threadId/reactions", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      // @ts-ignore
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
       const threadId = parseInt(req.params.threadId);
       const thread = await storage.getThread(threadId);
       
@@ -223,7 +300,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const reactionData = insertReactionSchema.parse({
         ...req.body,
-        threadId
+        threadId,
+        userId
       });
       
       const reaction = await storage.createReaction(reactionData);
@@ -233,13 +311,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/threads/:threadId/reactions", async (req: Request, res: Response) => {
+  app.delete("/api/threads/:threadId/reactions", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const threadId = parseInt(req.params.threadId);
-      const { userId, type } = req.body;
+      // @ts-ignore
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       
-      if (!userId || !type) {
-        return res.status(400).json({ message: "userId and type are required" });
+      const threadId = parseInt(req.params.threadId);
+      const { type } = req.body;
+      
+      if (!type) {
+        return res.status(400).json({ message: "Reaction type is required" });
       }
       
       const deleted = await storage.deleteReaction(userId, threadId, type);
@@ -255,9 +339,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Message routes
-  app.get("/api/messages/:userId", async (req: Request, res: Response) => {
+  app.get("/api/messages/:userId", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      // @ts-ignore
+      const currentUserId = req.user?.id;
       const userId = parseInt(req.params.userId);
+      
+      // Only allow access to your own messages
+      if (currentUserId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const otherId = parseInt(req.query.otherId as string);
       
       if (!otherId) {
@@ -271,9 +363,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/messages", async (req: Request, res: Response) => {
+  app.post("/api/messages", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const messageData = insertMessageSchema.parse(req.body);
+      // @ts-ignore
+      const senderId = req.user?.id;
+      if (!senderId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const messageData = insertMessageSchema.parse({
+        ...req.body,
+        senderId
+      });
       
       // Moderate message content
       const moderationResult = await moderateContent(messageData.content);
@@ -340,11 +441,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User stats routes
-  app.get("/api/users/:userId/stats", async (req: Request, res: Response) => {
+  app.get("/api/users/:userId/stats", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      // @ts-ignore
+      const currentUserId = req.user?.id;
       const userId = parseInt(req.params.userId);
-      const user = await storage.getUser(userId);
       
+      // Only allow access to your own stats
+      if (currentUserId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -353,10 +461,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const daysInCommunity = await storage.getUserDaysInCommunity(userId);
       const badges = await storage.getBadgesByUserId(userId);
       
+      // Check if a weekly check-in is needed
+      const needsCheckin = await storage.isCheckinNeeded(userId);
+      
       return res.json({
         supportedCount,
         daysInCommunity,
-        badges
+        badges,
+        needsCheckin
       });
     } catch (error) {
       return handleError(res, error);
