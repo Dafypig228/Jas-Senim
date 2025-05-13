@@ -21,7 +21,7 @@ export function MessageForm({ senderId, receiverId, conversationId }: MessageFor
   const queryClient = useQueryClient();
 
   const sendMessage = useMutation({
-    mutationFn: async (data: { senderId: number; receiverId: number; content: string }) => {
+    mutationFn: async (data: { receiverId: number; content: string }) => {
       const response = await apiRequest("POST", "/api/messages", data);
       return response.json();
     },
@@ -48,7 +48,6 @@ export function MessageForm({ senderId, receiverId, conversationId }: MessageFor
     
     setIsSubmitting(true);
     sendMessage.mutate({
-      senderId,
       receiverId,
       content: content.trim()
     });

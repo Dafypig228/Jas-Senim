@@ -415,7 +415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const messageData = insertMessageSchema.parse({
         ...req.body,
-        senderId
+        senderId // Устанавливаем senderId из аутентифицированного пользователя
       });
       
       // Moderate message content

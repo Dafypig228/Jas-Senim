@@ -197,6 +197,7 @@ export default function ThreadDetailsPage() {
       return await apiRequest('POST', '/api/messages', {
         content: directMessageContent,
         receiverId: directMessageRecipient.id
+        // senderId устанавливается автоматически на сервере из аутентифицированного пользователя
       });
     },
     onSuccess: () => {

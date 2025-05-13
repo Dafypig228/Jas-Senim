@@ -58,7 +58,8 @@
       "description": "О чем сейчас говорят",
       "empty": "Нет популярных тем",
       "threadsCount": "Обсуждений: {{count}}",
-      "allTopics": "Все темы"
+      "allTopics": "Все темы",
+      "viewAll": "Смотреть все"
     },
     "community": {
       "title": "Статистика сообщества",
