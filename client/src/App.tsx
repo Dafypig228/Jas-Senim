@@ -6,14 +6,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Header from "@/components/layout/Header";
 import EmergencyButton from "@/components/layout/EmergencyButton";
-import Home from "@/pages/Home";
-import MyThreads from "@/pages/MyThreads";
-import Messages from "@/pages/Messages";
+import HomePage from "@/pages/home-page";
+import ThreadsPage from "@/pages/threads";
+import MessagesPage from "@/pages/messages";
 import Resources from "@/pages/Resources";
 import AuthPage from "@/pages/auth-page";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { EmotionalCheckin } from "@/components/EmotionalCheckin";
 import { useEffect } from "react";
 
 function Router() {
@@ -21,9 +20,11 @@ function Router() {
   
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <ProtectedRoute path="/my-threads" component={MyThreads} />
-      <ProtectedRoute path="/messages" component={Messages} />
+      <Route path="/" component={HomePage} />
+      <Route path="/threads" component={ThreadsPage} />
+      <Route path="/threads/:id" component={ThreadsPage} />
+      <ProtectedRoute path="/messages/:conversationId" component={MessagesPage} />
+      <ProtectedRoute path="/messages" component={MessagesPage} />
       <Route path="/resources" component={Resources} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
@@ -53,7 +54,6 @@ function AppContent() {
       <Header currentUser={user} notifications={2} />
       <Router />
       <EmergencyButton />
-      {user && <EmotionalCheckin />}
     </>
   );
 }

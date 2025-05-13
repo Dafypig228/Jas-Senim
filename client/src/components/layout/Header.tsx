@@ -1,150 +1,295 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  LogOut,
+  User,
+  Menu,
+  MessageSquare,
+  Home,
+  BookOpen,
+  Heart,
+  Bell,
+  Plus,
+  X,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface HeaderProps {
-  currentUser: {
+  currentUser?: {
     id: number;
     username: string;
+    avatar?: string | null;
   } | null;
-  notifications: number;
+  notifications?: number;
 }
 
-const Header = ({ currentUser, notifications }: HeaderProps) => {
-  const [location] = useLocation();
+export default function Header({ currentUser, notifications = 0 }: HeaderProps) {
   const { t } = useTranslation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [location] = useLocation();
   const { logoutMutation } = useAuth();
-  
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-  
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const handleLogout = () => {
     logoutMutation.mutate();
   };
 
+  const navItems = [
+    { path: "/", label: t('nav.home'), icon: <Home className="h-4 w-4" /> },
+    { path: "/threads", label: t('nav.threads'), icon: <MessageSquare className="h-4 w-4" /> },
+    { path: "/resources", label: t('nav.resources'), icon: <BookOpen className="h-4 w-4" /> },
+  ];
+
+  const isActiveRoute = (path: string) => {
+    if (path === "/") return location === path;
+    return location.startsWith(path);
+  };
+
   return (
-    <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-primary-500 text-2xl mr-2 ri-heart-pulse-fill"></span>
-              <span className="font-heading font-bold text-primary-500 text-xl">{t('header.support')}</span>
-            </Link>
-            <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link 
-                href="/" 
-                className={`${location === '/' ? 'border-primary-500 text-neutral-700' : 'border-transparent hover:border-neutral-300 text-neutral-500 hover:text-neutral-700'} border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium`}
+    <header className="bg-white border-b border-border/40 sticky top-0 z-40 shadow-sm">
+      <div className="container mx-auto px-4 flex h-16 items-center justify-between">
+        {/* Logo and desktop navigation */}
+        <div className="flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-2">
+            <Heart className="h-6 w-6 text-primary" />
+            <span className="font-bold text-lg text-primary-foreground">{t('app.name')}</span>
+          </Link>
+          
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <Button
+                key={item.path}
+                variant={isActiveRoute(item.path) ? "secondary" : "ghost"}
+                size="sm"
+                asChild
+                className={`gap-2 ${isActiveRoute(item.path) ? "bg-secondary/20" : ""}`}
               >
-                {t('header.feed')}
-              </Link>
-              {currentUser && (
-                <>
-                  <Link 
-                    href="/my-threads" 
-                    className={`${location === '/my-threads' ? 'border-primary-500 text-neutral-700' : 'border-transparent hover:border-neutral-300 text-neutral-500 hover:text-neutral-700'} border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium`}
-                  >
-                    {t('header.myThreads')}
-                  </Link>
-                  <Link 
-                    href="/messages" 
-                    className={`${location === '/messages' ? 'border-primary-500 text-neutral-700' : 'border-transparent hover:border-neutral-300 text-neutral-500 hover:text-neutral-700'} border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium`}
-                  >
-                    {t('header.messages')}
-                  </Link>
-                </>
+                <Link to={item.path}>
+                  {item.icon}
+                  {item.label}
+                </Link>
+              </Button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Desktop user section */}
+        <div className="hidden md:flex items-center gap-2">
+          {currentUser ? (
+            <>
+              {notifications > 0 && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="relative">
+                        <Bell className="h-5 w-5" />
+                        <Badge 
+                          className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-destructive"
+                          variant="destructive"
+                        >
+                          {notifications}
+                        </Badge>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('notifications.tooltip')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
-              <Link 
-                href="/resources" 
-                className={`${location === '/resources' ? 'border-primary-500 text-neutral-700' : 'border-transparent hover:border-neutral-300 text-neutral-500 hover:text-neutral-700'} border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium`}
-              >
-                {t('header.resources')}
-              </Link>
-            </nav>
-          </div>
-          <div className="flex items-center">
-            {currentUser ? (
-              <>
-                <div className="hidden sm:flex items-center">
-                  <button className="p-2 rounded-full text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <span className="ri-search-line text-xl"></span>
-                  </button>
-                  <div className="relative ml-3">
-                    <button className="p-2 rounded-full text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                      <span className="ri-notification-3-line text-xl"></span>
-                      {notifications > 0 && (
-                        <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-status-error ring-2 ring-white"></span>
-                      )}
-                    </button>
-                  </div>
-                </div>
-                <div className="relative ml-3">
-                  <div className="flex items-center">
-                    <div className="h-8 w-8 rounded-full bg-accent-200 flex items-center justify-center">
-                      <span className="font-medium text-accent-700">
-                        {currentUser.username.charAt(0).toUpperCase()}
-                      </span>
+              
+              <Button variant="outline" size="sm" asChild className="gap-2">
+                <Link to="/threads/new">
+                  <Plus className="h-4 w-4" />
+                  {t('threads.create')}
+                </Link>
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={currentUser.avatar || undefined} alt={currentUser.username} />
+                      <AvatarFallback className="bg-primary-100 text-primary-700">
+                        {currentUser.username.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{currentUser.username}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        ID: {currentUser.id}
+                      </p>
                     </div>
-                    <button 
-                      onClick={handleLogout} 
-                      className="ml-2 text-neutral-500 hover:text-neutral-700 text-sm"
-                      disabled={logoutMutation.isPending}
-                    >
-                      {t('header.logout')}
-                    </button>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to={`/profile/${currentUser.id}`} className="cursor-pointer flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>{t('profile.view')}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/messages" className="cursor-pointer flex items-center">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      <span>{t('messages.title')}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t('auth.logout')}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/auth">
+                  {t('auth.login')}
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link to="/auth">
+                  {t('auth.register')}
+                </Link>
+              </Button>
+            </>
+          )}
+        </div>
+
+        {/* Mobile menu button */}
+        <div className="md:hidden">
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80 sm:w-96">
+              <SheetHeader className="mb-6">
+                <SheetTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-primary" />
+                  {t('app.name')}
+                </SheetTitle>
+              </SheetHeader>
+              
+              <div className="flex flex-col gap-2">
+                {currentUser && (
+                  <div className="flex items-center gap-4 p-4 mb-4 bg-muted/30 rounded-lg">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={currentUser.avatar || undefined} alt={currentUser.username} />
+                      <AvatarFallback className="bg-primary-100 text-primary-700">
+                        {currentUser.username.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{currentUser.username}</p>
+                      <Link to={`/profile/${currentUser.id}`} className="text-sm text-muted-foreground hover:text-primary">
+                        {t('profile.view')}
+                      </Link>
+                    </div>
                   </div>
+                )}
+                
+                {navItems.map((item) => (
+                  <Button
+                    key={item.path}
+                    variant={isActiveRoute(item.path) ? "secondary" : "ghost"}
+                    className={`justify-start gap-2 ${isActiveRoute(item.path) ? "bg-secondary/20" : ""}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    asChild
+                  >
+                    <Link to={item.path}>
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  </Button>
+                ))}
+                
+                {currentUser && (
+                  <>
+                    <Button variant="ghost" className="justify-start gap-2" asChild>
+                      <Link to="/messages" onClick={() => setMobileMenuOpen(false)}>
+                        <MessageSquare className="h-4 w-4" />
+                        {t('messages.title')}
+                        {notifications > 0 && (
+                          <Badge className="ml-2" variant="destructive">
+                            {notifications}
+                          </Badge>
+                        )}
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="justify-start gap-2 mt-2" asChild>
+                      <Link to="/threads/new" onClick={() => setMobileMenuOpen(false)}>
+                        <Plus className="h-4 w-4" />
+                        {t('threads.create')}
+                      </Link>
+                    </Button>
+                  </>
+                )}
+                
+                <div className="mt-auto pt-6">
+                  {currentUser ? (
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      {t('auth.logout')}
+                    </Button>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <Button asChild className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                        <Link to="/auth">
+                          {t('auth.login')}
+                        </Link>
+                      </Button>
+                      <Button variant="outline" asChild className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                        <Link to="/auth">
+                          {t('auth.register')}
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              </>
-            ) : (
-              <Link href="/auth" className="bg-primary-500 hover:bg-primary-600 text-white rounded-md px-4 py-2 text-sm font-medium">
-                {t('header.login')}
-              </Link>
-            )}
-            <div className="ml-3 md:hidden">
-              <button 
-                className="p-2 rounded-full text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                onClick={toggleMobileMenu}
-              >
-                <span className="ri-menu-line text-xl"></span>
-              </button>
-            </div>
-          </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
-      
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-neutral-200">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            <Link href="/" className={location === '/' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
-              {t('header.feed')}
-            </Link>
-            {currentUser && (
-              <>
-                <Link href="/my-threads" className={location === '/my-threads' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
-                  {t('header.myThreads')}
-                </Link>
-                <Link href="/messages" className={location === '/messages' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
-                  {t('header.messages')}
-                </Link>
-              </>
-            )}
-            <Link href="/resources" className={location === '/resources' ? "bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium" : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 block px-3 py-2 rounded-md text-base font-medium"}>
-              {t('header.resources')}
-            </Link>
-            {!currentUser && (
-              <Link href="/auth" className="bg-primary-50 text-primary-700 block px-3 py-2 rounded-md text-base font-medium">
-                {t('header.login')}
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
     </header>
   );
-};
-
-export default Header;
+}
