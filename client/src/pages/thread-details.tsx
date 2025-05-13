@@ -436,6 +436,26 @@ export default function ThreadDetailsPage() {
               <Share2 className="h-4 w-4" />
               <span>{t('thread.share')}</span>
             </Button>
+
+            {user && thread.thread?.author && thread.thread.author.id !== user.id && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  if (thread.thread?.author) {
+                    setDirectMessageRecipient({
+                      id: thread.thread.author.id,
+                      username: thread.thread.author.username || t('thread.anonymous')
+                    });
+                    setShowDirectMessageModal(true);
+                  }
+                }}
+                className="text-xs flex items-center gap-1 text-gray-600"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>{t('thread.directMessage')}</span>
+              </Button>
+            )}
           </div>
           <div className="flex gap-2">
             <Button 
@@ -602,27 +622,49 @@ export default function ThreadDetailsPage() {
                         </span>
                       </div>
                       {user && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-7 text-xs text-gray-600 hover:text-gray-900"
-                          onClick={() => {
-                            setReplyTo({
-                              id: comment.id,
-                              author: comment.author?.username || t('thread.anonymous')
-                            });
-                            // Фокус на поле ввода после клика
-                            setTimeout(() => {
-                              document.querySelector('textarea')?.focus();
-                            }, 100);
-                          }}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="15 10 20 15 15 20"></polyline>
-                            <path d="M4 4v7a4 4 0 0 0 4 4h12"></path>
-                          </svg>
-                          {t('thread.reply')}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-7 text-xs text-gray-600 hover:text-gray-900"
+                            onClick={() => {
+                              setReplyTo({
+                                id: comment.id,
+                                author: comment.author?.username || t('thread.anonymous')
+                              });
+                              // Фокус на поле ввода после клика
+                              setTimeout(() => {
+                                document.querySelector('textarea')?.focus();
+                              }, 100);
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="15 10 20 15 15 20"></polyline>
+                              <path d="M4 4v7a4 4 0 0 0 4 4h12"></path>
+                            </svg>
+                            {t('thread.reply')}
+                          </Button>
+                          
+                          {comment.author && comment.author.id !== user.id && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-7 text-xs text-gray-600 hover:text-gray-900"
+                              onClick={() => {
+                                if (comment.author) {
+                                  setDirectMessageRecipient({
+                                    id: comment.author.id,
+                                    username: comment.author.username || t('thread.anonymous')
+                                  });
+                                  setShowDirectMessageModal(true);
+                                }
+                              }}
+                            >
+                              <MessageSquare className="h-3 w-3 mr-1" />
+                              {t('thread.directMessage')}
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
                     <div className="bg-neutral-50 rounded-md p-3">
@@ -646,6 +688,52 @@ export default function ThreadDetailsPage() {
           )}
         </CardContent>
       </Card>
+      
+      {/* Диалоговое окно для личного сообщения */}
+      <Dialog open={showDirectMessageModal} onOpenChange={setShowDirectMessageModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('messages.newDirectMessage')}</DialogTitle>
+            <DialogDescription>
+              {directMessageRecipient && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span>{t('messages.messageTo')}</span>
+                  <span className="font-medium">{directMessageRecipient.username}</span>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Textarea 
+              value={directMessageContent}
+              onChange={(e) => setDirectMessageContent(e.target.value)}
+              placeholder={t('messages.placeholder')}
+              className="min-h-[100px]"
+            />
+          </div>
+          <DialogFooter className="sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowDirectMessageModal(false);
+                setDirectMessageContent("");
+              }}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button 
+              type="button" 
+              disabled={!directMessageContent.trim() || sendDirectMessageMutation.isPending}
+              onClick={() => sendDirectMessageMutation.mutate()}
+              className="gap-2"
+            >
+              <Send className="h-4 w-4" />
+              {t('messages.send')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
