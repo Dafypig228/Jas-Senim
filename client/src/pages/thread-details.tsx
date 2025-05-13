@@ -6,7 +6,7 @@ import { ThreadCard } from "@/components/threads/thread-card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -19,7 +19,12 @@ import {
   MessageSquare,
   Share2,
   Flag,
-  UserCircle
+  UserCircle,
+  Bell,
+  BellOff,
+  Clock,
+  Check,
+  X
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -34,6 +39,29 @@ export default function ThreadDetailsPage() {
   const [comment, setComment] = useState("");
   const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<{id: number, author: string} | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Array<{
+    id: number;
+    title: string;
+    message: string;
+    isRead: boolean;
+    timestamp: Date;
+  }>>([
+    {
+      id: 1,
+      title: "Новый комментарий",
+      message: "Пользователь прокомментировал ваш пост",
+      isRead: false,
+      timestamp: new Date(Date.now() - 1000 * 60 * 30)
+    },
+    {
+      id: 2,
+      title: "Новая реакция",
+      message: "Пользователь отреагировал на ваш пост",
+      isRead: false,
+      timestamp: new Date(Date.now() - 1000 * 60 * 120)
+    }
+  ]);
 
   // Thread details query
   const { data: thread, isLoading: isLoadingThread } = useQuery({
