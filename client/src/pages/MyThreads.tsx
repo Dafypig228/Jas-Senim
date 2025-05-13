@@ -14,8 +14,8 @@ interface Thread {
   createdAt: string;
   reactionCounts: {
     understand: number;
-    not_alone: number;
-    will_overcome: number;
+    notAlone: number;
+    willOvercome: number;
     idea: number;
     support: number;
   };

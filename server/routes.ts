@@ -171,8 +171,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const threadsWithReactions = await Promise.all(threads.map(async (thread) => {
         const reactionCounts = {
           understand: await storage.getReactionCountByThreadIdAndType(thread.id, 'understand'),
-          not_alone: await storage.getReactionCountByThreadIdAndType(thread.id, 'not_alone'),
-          will_overcome: await storage.getReactionCountByThreadIdAndType(thread.id, 'will_overcome'),
+          notAlone: await storage.getReactionCountByThreadIdAndType(thread.id, 'notAlone'),
+          willOvercome: await storage.getReactionCountByThreadIdAndType(thread.id, 'willOvercome'),
           idea: await storage.getReactionCountByThreadIdAndType(thread.id, 'idea'),
           support: await storage.getReactionCountByThreadIdAndType(thread.id, 'support')
         };

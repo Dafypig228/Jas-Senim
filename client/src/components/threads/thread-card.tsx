@@ -180,12 +180,12 @@ export function ThreadCard({ thread, preview = false }: ThreadCardProps) {
                     </Tooltip>
                   )}
                   
-                  {thread.reactionCounts.will_overcome > 0 && (
+                  {thread.reactionCounts.willOvercome > 0 && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="flex items-center text-xs text-muted-foreground">
                           <Heart className="h-4 w-4 mr-1 text-red-600" />
-                          <span>{thread.reactionCounts.will_overcome}</span>
+                          <span>{thread.reactionCounts.willOvercome}</span>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
