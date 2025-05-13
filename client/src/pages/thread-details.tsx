@@ -42,6 +42,9 @@ export default function ThreadDetailsPage() {
   const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<{id: number, author: string} | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showDirectMessageModal, setShowDirectMessageModal] = useState(false);
+  const [directMessageContent, setDirectMessageContent] = useState("");
+  const [directMessageRecipient, setDirectMessageRecipient] = useState<{ id: number, username: string } | null>(null);
   const [notifications, setNotifications] = useState<Array<{
     id: number;
     title: string;

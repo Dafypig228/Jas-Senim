@@ -101,26 +101,63 @@ export default function Header({ currentUser, notifications = 0 }: HeaderProps) 
         <div className="hidden md:flex items-center gap-2">
           {currentUser ? (
             <>
-              {notifications > 0 && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="relative">
-                        <Bell className="h-5 w-5" />
-                        <Badge 
-                          className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-destructive"
-                          variant="destructive"
-                        >
-                          {notifications}
-                        </Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5" />
+                    {notifications > 0 && (
+                      <Badge 
+                        className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-destructive"
+                        variant="destructive"
+                      >
+                        {notifications}
+                      </Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-80" align="end" forceMount>
+                  <DropdownMenuLabel className="flex justify-between items-center">
+                    <span>{t('notifications.title')}</span>
+                    {notifications > 0 && (
+                      <Button variant="ghost" size="sm" className="h-8 text-xs">
+                        {t('notifications.markAllRead')}
                       </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t('notifications.tooltip')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+                    )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  
+                  {notifications > 0 ? (
+                    <>
+                      <div className="max-h-80 overflow-y-auto">
+                        {[...Array(notifications)].map((_, i) => (
+                          <div key={i} className="p-3 hover:bg-muted transition-colors">
+                            <div className="flex justify-between mb-1">
+                              <span className="font-medium text-sm">
+                                {i % 2 === 0 ? t('notifications.newComment') : t('notifications.newReaction')}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {i < 2 ? t('notifications.justNow') : `${i} ${t('notifications.minutesAgo')}`}
+                              </span>
+                            </div>
+                            <p className="text-muted-foreground text-sm">
+                              {i % 2 === 0 ? t('notifications.commentMessage') : t('notifications.reactionMessage')}
+                            </p>
+                            <Button variant="link" size="sm" className="h-6 mt-1 px-0" asChild>
+                              <Link to={`/threads/${i + 1}`}>
+                                {t('notifications.readMore')}
+                              </Link>
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-6 text-center">
+                      <p className="text-muted-foreground">{t('notifications.empty')}</p>
+                    </div>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               <Button variant="outline" size="sm" asChild className="gap-2">
                 <Link to="/threads/new">
