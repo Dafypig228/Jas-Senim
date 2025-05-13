@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
@@ -6,6 +6,8 @@ import { ThreadCard } from "@/components/threads/thread-card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -172,6 +174,27 @@ export default function ThreadDetailsPage() {
       addReactionMutation.mutate({ type });
       setSelectedReaction(type);
     }
+  };
+  
+  const formatNotificationTime = (date: Date) => {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) {
+      return t('notifications.justNow');
+    } else if (diffInMinutes < 60) {
+      return t('notifications.minutesAgo', { count: diffInMinutes });
+    } else {
+      const hours = Math.floor(diffInMinutes / 60);
+      return t('notifications.hoursAgo', { count: hours });
+    }
+  };
+  
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => prev.map(notification => ({
+      ...notification,
+      isRead: true
+    })));
   };
 
   const formatDate = (dateString: string) => {
