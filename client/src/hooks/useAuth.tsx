@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/auth/user"], user);
+      queryClient.invalidateQueries({ queryKey: ["/api/checkin/needed"] });
       toast({
         title: "Успешный вход",
         description: `Добро пожаловать, ${user.username}!`,
@@ -99,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/auth/user"], null);
+      queryClient.removeQueries({ queryKey: ["/api/checkin/needed"] });
       toast({
         title: "Выход выполнен",
         description: "Сеанс завершен успешно",
