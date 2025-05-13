@@ -206,30 +206,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId
       });
       
-      // Moderate content before saving
-      const moderationResult = await moderateContent(threadData.content);
-      
-      // Create thread with moderation results
-      const thread = await storage.createThread({
-        ...threadData,
-        // @ts-ignore
-        isRisky: moderationResult.isRisky,
-        // @ts-ignore
-        riskLevel: moderationResult.riskLevel,
-        // @ts-ignore
-        riskReason: moderationResult.riskReason
-      });
-      
-      // If high risk, perform additional suicide risk assessment
-      if (moderationResult.riskLevel >= 7) {
-        const riskAssessment = await assessSuicideRisk(threadData.content);
+      try {
+        // Moderate content before saving
+        const moderationResult = await moderateContent(threadData.content);
         
-        // Update thread with risk assessment info
-        // In a real implementation, this would trigger alerts and other actions
-        console.log("High risk thread detected:", riskAssessment);
+        // Create thread with moderation results
+        const thread = await storage.createThread({
+          ...threadData,
+          // @ts-ignore
+          isRisky: moderationResult.isRisky,
+          // @ts-ignore
+          riskLevel: moderationResult.riskLevel,
+          // @ts-ignore
+          riskReason: moderationResult.riskReason
+        });
+        
+        // If high risk, perform additional suicide risk assessment
+        if (moderationResult.riskLevel >= 7) {
+          try {
+            const riskAssessment = await assessSuicideRisk(threadData.content);
+            
+            // Update thread with risk assessment info
+            // In a real implementation, this would trigger alerts and other actions
+            console.log("High risk thread detected:", riskAssessment);
+          } catch (assessError) {
+            console.error("Error in suicide risk assessment:", assessError);
+          }
+        }
+        
+        return res.status(201).json(thread);
+      } catch (modError) {
+        console.error("Moderation error, creating thread without moderation:", modError);
+        
+        // Если модерация недоступна, все равно создаем тред
+        const thread = await storage.createThread({
+          ...threadData,
+          isRisky: false,
+          riskLevel: 0,
+          riskReason: null
+        });
+        
+        return res.status(201).json(thread);
       }
-      
-      return res.status(201).json(thread);
     } catch (error) {
       return handleError(res, error);
     }
@@ -267,16 +285,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId
       });
       
-      // Moderate comment content
-      const moderationResult = await moderateContent(commentData.content);
-      
-      const comment = await storage.createComment({
-        ...commentData,
-        // @ts-ignore
-        isRisky: moderationResult.isRisky
-      });
-      
-      return res.status(201).json(comment);
+      try {
+        // Moderate comment content
+        const moderationResult = await moderateContent(commentData.content);
+        
+        const comment = await storage.createComment({
+          ...commentData,
+          // @ts-ignore
+          isRisky: moderationResult.isRisky
+        });
+        
+        return res.status(201).json(comment);
+      } catch (modError) {
+        console.error("Moderation error, creating comment without moderation:", modError);
+        
+        // Если модерация недоступна, все равно создаем комментарий
+        const comment = await storage.createComment({
+          ...commentData,
+          isRisky: false
+        });
+        
+        return res.status(201).json(comment);
+      }
     } catch (error) {
       return handleError(res, error);
     }
@@ -339,24 +369,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Message routes
-  app.get("/api/messages/:userId", isAuthenticated, async (req: Request, res: Response) => {
+  app.get("/api/messages/:conversationId", isAuthenticated, async (req: Request, res: Response) => {
     try {
       // @ts-ignore
       const currentUserId = req.user?.id;
-      const userId = parseInt(req.params.userId);
+      if (!currentUserId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       
-      // Only allow access to your own messages
-      if (currentUserId !== userId) {
+      const conversationId = req.params.conversationId;
+      let userId1, userId2;
+      
+      if (conversationId.includes('-')) {
+        // Формат "user1-user2"
+        [userId1, userId2] = conversationId.split('-').map(id => parseInt(id));
+      } else {
+        // Обратная совместимость: параметр - идентификатор пользователя
+        userId1 = parseInt(conversationId);
+        userId2 = parseInt(req.query.otherId as string);
+        
+        if (!userId2) {
+          return res.status(400).json({ message: "otherId query parameter is required" });
+        }
+      }
+      
+      // Проверяем, что текущий пользователь является участником беседы
+      if (currentUserId !== userId1 && currentUserId !== userId2) {
         return res.status(403).json({ message: "Access denied" });
       }
       
-      const otherId = parseInt(req.query.otherId as string);
-      
-      if (!otherId) {
-        return res.status(400).json({ message: "otherId query parameter is required" });
-      }
-      
-      const messages = await storage.getMessagesBetweenUsers(userId, otherId);
+      const messages = await storage.getMessagesBetweenUsers(userId1, userId2);
       return res.json(messages);
     } catch (error) {
       return handleError(res, error);
@@ -447,11 +489,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUserId = req.user?.id;
       const userId = parseInt(req.params.userId);
       
-      // Only allow access to your own stats
-      if (currentUserId !== userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
+      // Если пользователь запрашивает свои данные или данные другого пользователя
+      // В публичном сервисе можно открыть доступ к базовой статистике других пользователей
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -461,15 +500,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const daysInCommunity = await storage.getUserDaysInCommunity(userId);
       const badges = await storage.getBadgesByUserId(userId);
       
-      // Check if a weekly check-in is needed
-      const needsCheckin = await storage.isCheckinNeeded(userId);
-      
-      return res.json({
-        supportedCount,
-        daysInCommunity,
-        badges,
-        needsCheckin
-      });
+      // Дополнительная информация, доступная только самому пользователю
+      if (currentUserId === userId) {
+        // Check if a weekly check-in is needed
+        const needsCheckin = await storage.isCheckinNeeded(userId);
+        return res.json({
+          supportedCount,
+          daysInCommunity,
+          badges,
+          needsCheckin,
+          isCurrentUser: true
+        });
+      } else {
+        // Публичная статистика другого пользователя
+        return res.json({
+          supportedCount,
+          daysInCommunity,
+          badges,
+          isCurrentUser: false
+        });
+      }
     } catch (error) {
       return handleError(res, error);
     }

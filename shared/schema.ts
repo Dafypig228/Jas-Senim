@@ -49,6 +49,9 @@ export const insertThreadSchema = createInsertSchema(threads).pick({
   content: true,
   category: true,
   mood: true,
+  isRisky: true,
+  riskLevel: true,
+  riskReason: true,
 });
 
 // Comments schema
@@ -65,6 +68,7 @@ export const insertCommentSchema = createInsertSchema(comments).pick({
   threadId: true,
   userId: true,
   content: true,
+  isRisky: true,
 });
 
 // Reactions schema
